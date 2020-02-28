@@ -1,0 +1,4 @@
+/node_modules/
+/.idea/
+/vars/gallery-items/*
+!/vars/gallery-items/.gitignore
