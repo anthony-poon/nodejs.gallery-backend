@@ -3,27 +3,49 @@ const http = require('http');
 const fs = require('fs');
 const uuidv4 = require('uuid/v4');
 const axios = require('axios');
-
-const MIN_ITEM_COUNT = 25;
+const {GALLERY_ASSET_PATH} = require("../const");
+const MIN_ITEM_COUNT = 5;
+const MIN_IMAGE_COUNT = 3;
 
 (async () => {
-    const {User, GalleryItem, sequelize} = await require("../models");
-    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0;');
-    await GalleryItem.sync({ force: true });
-    await User.sync({ force: true });
-    const root = await User.findOrCreate({ where: { username: "root" }});
-    let itemCount = await GalleryItem.count();
-    while (itemCount <= MIN_ITEM_COUNT) {
-        const fileName = uuidv4() + ".png";
-        const path = __dirname + "/../vars/gallery-items/" + fileName;
-        const file = fs.createWriteStream(path);
-        // const response = await axios.get("https://picsum.photos/200/300");
-        // response.pipe(file);
-        const item = await GalleryItem.create({
-            header: lorem.generateWords(2),
-            content: lorem.generateParagraphs(1),
-        });
-        item.save();
-        itemCount += 1
+    try {
+        const {User, GalleryItem, GalleryImage, sequelize} = require("../models");
+
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 0;');
+        await GalleryItem.sync({force: true});
+        await User.sync({force: true});
+        await GalleryImage.sync({force: true});
+        const root = (await User.findOrCreate({where: {username: "root"}}))[0];
+        fs.readdirSync(GALLERY_ASSET_PATH)
+            .filter(fileName => /[.]png$/.test(fileName))
+            .map(fileName => fs.unlinkSync(GALLERY_ASSET_PATH + fileName));
+        let itemCount = await GalleryItem.count();
+        while (itemCount <= MIN_ITEM_COUNT) {
+            let imageCount = 0;
+            const item = await GalleryItem.create({
+                header: lorem.generateWords(2),
+                content: lorem.generateParagraphs(1),
+                userId: root.id
+            });
+            itemCount += 1;
+            while (imageCount < MIN_IMAGE_COUNT) {
+                const fileName = uuidv4() + ".png";
+                const path = GALLERY_ASSET_PATH + fileName;
+                const file = fs.createWriteStream(path);
+                const response = await axios.get("https://picsum.photos/200/300", {
+                    responseType: 'stream'
+                });
+                response.data.pipe(file);
+                imageCount += 1;
+                const image = await GalleryImage.create({
+                    fileName: fileName,
+                    galleryItemId: item.id
+                })
+            }
+        }
+    } catch (e) {
+        console.error(e);
+        process.exit(1);
     }
 })();
+

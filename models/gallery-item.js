@@ -1,21 +1,20 @@
-const Sequelize = require("sequelize");
-const Model = Sequelize.Model;
-class GalleryItem extends Model {}
-
-module.exports = (sequelize) => {
-    GalleryItem.init({
+module.exports = (sequelize, DataType) => {
+    const GalleryItem = sequelize.define("galleryItem", {
         header: {
-            type: Sequelize.STRING,
+            type: DataType.STRING,
         },
         content: {
-            type: Sequelize.STRING(2047),
+            type: DataType.STRING(2047),
         },
         fileName: {
-            type: Sequelize.STRING(2047),
+            type: DataType.STRING(2047),
         }
-    }, {
-        sequelize,
-        modelName: 'gallery_item'
     });
+
+    GalleryItem.associate = models => {
+        GalleryItem.user = GalleryItem.belongsTo(models.User)
+        GalleryItem.hasMany(models.GalleryImage);
+    };
+
     return GalleryItem;
 };

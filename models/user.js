@@ -1,16 +1,13 @@
-const Sequelize = require("sequelize");
-const Model = Sequelize.Model;
-class User extends Model {}
-
-module.exports = (sequelize) => {
-    User.init({
+module.exports = (sequelize, DataType) => {
+    const User = sequelize.define("user", {
         username: {
-            type: Sequelize.STRING,
+            type: DataType.STRING,
             allowNull: false
         }
-    }, {
-        sequelize,
-        modelName: 'user'
     });
+
+    User.associate = models => {
+        User.hasMany(models.GalleryItem, {onDelete: "cascade"});
+    };
     return User;
 };

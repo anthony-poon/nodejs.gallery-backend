@@ -1,0 +1,10 @@
+(async () => {
+    const { GalleryItem, User } = await require("../models");
+    const items = await GalleryItem.findAll({include: User });
+    const root = await User.findOne({ username: "root" });
+    root.destroy()
+    // for (let i = 0; i < items.length; i++) {
+    //     items[i].setUser(root);
+    //     items[i].save();
+    // }
+})();

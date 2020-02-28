@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "initialized": "node ./bin/initialize"
+    "initialized": "node ./bin/initialize",
+    "test": "node ./bin/test"
   },
   "dependencies": {
     "axios": "^0.19.2",
